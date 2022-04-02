@@ -43,19 +43,6 @@ services:
       - backend
       - redis
 
-  celery_beat:
-    container_name: celery_beat
-    build: ./backend
-    command: celery -A services beat
-    volumes:
-      - .:/app
-    environment:
-      CELERY_BROKER_URL: "redis://redis:6379/0"
-      CELERY_RESULT_BACKEND: "redis://redis:6379/0"
-    depends_on:
-      - backend
-      - redis
-
   flower:
     container_name: flower
     build: ./backend
@@ -69,4 +56,3 @@ services:
     - backend
     - redis
     - celery_worker
-    - celery_beat

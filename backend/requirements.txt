@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+alembic
+pydantic
+psycopg2-binary
+SQLAlchemy
+requests
+celery
+redis
+flower

@@ -1,4 +1,5 @@
 from datetime import datetime
+from pytz import timezone
 from sqlalchemy.orm import Session, contains_eager, joinedload
 from sqlalchemy import func, case
 from  fastapi import HTTPException, status
@@ -71,7 +72,7 @@ def add_mailing(request:MailingInfoIn, db:Session):
         "tag_filter": mailing.tag_filter,
         "date_time_end": mailing.date_time_end
     }
-    if datetime.now() > mailing.date_time_start and\
+    if datetime.now() >= mailing.date_time_start and\
         datetime.now() < mailing.date_time_end:
         task = shedule_sending.delay(mailing_dict)
         mailing.task_id = task.id
@@ -80,7 +81,9 @@ def add_mailing(request:MailingInfoIn, db:Session):
                 "task_id": f"{task.id}"}
     elif datetime.now() < mailing.date_time_start:
         '''Выполнять отложенную задачу'''
-        task = shedule_sending.apply_async((mailing_dict,), eta=mailing.date_time_start)
+        locale_to_use = timezone('Europe/Moscow')
+        current_time = locale_to_use.localize(mailing.date_time_start)
+        task = shedule_sending.apply_async((mailing_dict,), eta=current_time)
         mailing.task_id = task.id
         db.commit()
         db.refresh(mailing)
@@ -104,7 +107,9 @@ def update_mailing_by_id(mailing_id:int, db:Session, request:MailingInfoIn):
         "tag_filter": mailing_db.tag_filter,
         "date_time_end": mailing_db.date_time_end
     }
-    task = shedule_sending.apply_async((mailing_dict,), eta=mailing_db.date_time_start)
+    locale_to_use = timezone('Europe/Moscow')
+    current_time = locale_to_use.localize(mailing.date_time_start)
+    task = shedule_sending.apply_async((mailing_dict,), eta=current_time)
     mailing_db.task_id = task.id
     db.commit()
     db.refresh(mailing_db)

@@ -80,7 +80,6 @@ def add_mailing(request:MailingInfoIn, db:Session):
                 "task_id": f"{task.id}"}
     elif datetime.now() < mailing.date_time_start:
         '''Выполнять отложенную задачу'''
-        print(type(mailing.date_time_start), mailing.date_time_start)
         task = shedule_sending.apply_async((mailing_dict,), eta=mailing.date_time_start)
         mailing.task_id = task.id
         db.commit()

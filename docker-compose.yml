@@ -25,6 +25,7 @@ services:
   redis:
     image: redis
     environment:
+      - TZ=Europe/Moscow
       - ALLOW_EMPTY_PASSWORD=yes
     depends_on:
       - backend
@@ -34,8 +35,7 @@ services:
     build: ./backend
     command: celery -A services worker -l DEBUG
     volumes:
-      - .:/app
-      - "./backend/services:/backend/services"
+      - "./backend/:/backend/"
     environment:
       CELERY_BROKER_URL: "redis://redis:6379/0"
       CELERY_RESULT_BACKEND: "redis://redis:6379/0"
